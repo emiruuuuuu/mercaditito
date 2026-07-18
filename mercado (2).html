@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mercadito</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4F7EF;
+    --orange:#94C7A6;
+    --orange-dark:#5E9B76;
+    --yellow:#E3D89A;
+    --black:#20281F;
+    --muted:#8B937F;
+    --danger:#C6431F;
+    --radius:22px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--black);
+    font-family:'Poppins', sans-serif;
+    padding-bottom:130px;
+  }
+  h1,h2,.headline{font-family:'Baloo 2', sans-serif;}
+
+  header{
+    background:var(--orange);
+    color:#fff;
+    padding:22px 18px 0;
+    position:sticky; top:0; z-index:10;
+  }
+  .header-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  header h1{font-size:1.25rem; margin:0; font-weight:800; letter-spacing:-0.01em; white-space:nowrap;}
+  header .badge{
+    background:var(--cream); color:var(--orange-dark);
+    border:2px solid var(--black); border-radius:50%;
+    width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+  }
+  .tabs{display:flex; gap:6px; padding-bottom:14px;}
+  .tab-btn{
+    flex:1; background:rgba(255,255,255,0.18); border:2px solid transparent;
+    color:#fff; padding:9px 6px; border-radius:14px; font-size:0.8rem; font-weight:700;
+    font-family:'Poppins',sans-serif;
+  }
+  .tab-btn.active{background:var(--cream); color:var(--orange-dark); border-color:var(--black);}
+
+  .zigzag{
+    height:16px;
+    background:
+      linear-gradient(135deg, var(--orange) 25%, transparent 25%) 0 50%,
+      linear-gradient(225deg, var(--orange) 25%, transparent 25%) 0 50%;
+    background-size:16px 16px; background-repeat:repeat-x;
+  }
+
+  main{padding:18px 16px;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .filter-row{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:18px;
+    -ms-overflow-style:none; scrollbar-width:none;
+  }
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{
+    flex-shrink:0; background:#fff; border:2px solid var(--black); color:var(--black);
+    padding:8px 16px; border-radius:999px; font-size:0.8rem; font-weight:700; white-space:nowrap;
+  }
+  .filter-chip.active{background:var(--black); color:var(--cream);}
+
+  .category{margin-bottom:20px;}
+  .category h2{font-size:1rem; color:var(--orange-dark); margin:0 0 10px; font-weight:700;}
+
+  .product{
+    background:#fff; border:2px solid var(--black); border-radius:var(--radius);
+    padding:12px 14px; margin-bottom:10px; box-shadow:3px 3px 0 var(--black);
+  }
+  .product.checked{background:#FFF7EC;}
+  .product-top{display:flex; align-items:center; gap:12px;}
+  .icon-badge{
+    width:44px; height:44px; border-radius:50%; background:var(--cream);
+    border:2px solid var(--black); display:flex; align-items:center; justify-content:center;
+    font-size:1.35rem; flex-shrink:0;
+  }
+  .product-photo{width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid var(--black);}
+  .product-info{flex:1; min-width:0;}
+  .product-name{font-weight:700; font-size:0.9rem; color:var(--black); line-height:1.25;}
+  .product-desc{color:var(--muted); font-size:0.74rem; margin-top:1px;}
+  .check-wrap{flex-shrink:0; width:26px; height:26px;}
+  .check-wrap input[type=checkbox]{
+    appearance:none; -webkit-appearance:none; width:26px; height:26px; border-radius:8px;
+    border:2px solid var(--black); background:#fff; cursor:pointer; position:relative; margin:0;
+  }
+  .check-wrap input[type=checkbox]:checked{background:var(--orange);}
+  .check-wrap input[type=checkbox]:checked::after{
+    content:"✓"; position:absolute; top:50%; left:50%; transform:translate(-50%,-52%);
+    color:#fff; font-size:15px; font-weight:700;
+  }
+
+  .product-bottom{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:10px; padding-top:10px; border-top:1px dashed #E4DBC8;
+  }
+  .product-price{
+    font-weight:800; color:#fff; font-size:0.82rem; white-space:nowrap;
+    background:var(--orange-dark); border:2px solid var(--black); padding:5px 10px; border-radius:999px;
+  }
+  .qty-stepper{
+    display:flex; align-items:center; gap:0; border:2px solid var(--black); border-radius:999px; overflow:hidden;
+  }
+  .qty-stepper button{
+    width:28px; height:28px; background:var(--cream); border:none; font-size:1rem; font-weight:800;
+    color:var(--black); display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .qty-stepper button:active{background:var(--yellow);}
+  .qty-stepper .qty-value{
+    min-width:22px; text-align:center; font-weight:800; font-size:0.85rem; font-family:'Baloo 2',sans-serif;
+  }
+  .edit-btn{
+    background:var(--cream); border:2px solid var(--black); border-radius:50%;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    font-size:0.82rem; flex-shrink:0; padding:0;
+  }
+  .del-btn{background:none; border:none; color:var(--danger); font-size:1.1rem; padding:0 2px; font-weight:700;}
+
+  .summary-bar{
+    position:fixed; bottom:16px; left:16px; right:16px; background:var(--black); border-radius:20px;
+    padding:16px 20px; display:flex; justify-content:space-between; align-items:center;
+    z-index:20; box-shadow:4px 4px 0 var(--orange-dark);
+  }
+  .summary-bar .count{color:rgba(255,255,255,0.55); font-size:0.78rem; font-weight:600;}
+  .summary-bar .total{font-size:1.2rem; font-weight:800; color:var(--yellow); font-family:'Baloo 2',sans-serif;}
+
+  .empty-msg{
+    color:var(--muted); text-align:center; padding:36px 16px; font-size:0.88rem;
+    background:#fff; border-radius:var(--radius); border:2px dashed var(--black);
+  }
+
+  .scan-box{
+    background:#fff; border:2px solid var(--black); border-radius:24px; padding:18px;
+    margin-bottom:20px; box-shadow:4px 4px 0 var(--black);
+  }
+  .scan-box label{
+    display:block; font-size:0.72rem; color:var(--orange-dark); margin:12px 0 5px;
+    font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
+  }
+  .scan-box label:first-child{margin-top:0;}
+  .scan-box input[type=text], .scan-box input[type=number], .scan-box select{
+    width:100%; padding:12px 14px; border-radius:14px; background:var(--cream);
+    border:2px solid var(--black); color:var(--black); font-size:0.92rem; font-family:'Poppins',sans-serif;
+  }
+  .photo-actions{display:flex; gap:8px; margin-top:12px;}
+  .photo-actions label{
+    flex:1; text-align:center; background:var(--orange); border:2px solid var(--black);
+    border-radius:14px; padding:12px; font-size:0.8rem; color:#fff; cursor:pointer; margin:0; font-weight:700;
+  }
+  .preview-wrap{margin-top:12px; text-align:center;}
+  .preview-wrap img{max-width:130px; border-radius:14px; border:2px solid var(--black);}
+  .add-btn{
+    width:100%; margin-top:16px; background:var(--yellow); color:var(--black);
+    border:2px solid var(--black); padding:14px; border-radius:999px;
+    font-weight:800; font-size:0.98rem; font-family:'Baloo 2',sans-serif; box-shadow:3px 3px 0 var(--black);
+  }
+  .scan-list h2{font-size:0.85rem; color:var(--orange-dark); margin-bottom:10px; font-weight:700;}
+
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(33,22,16,0.55); z-index:50;
+    align-items:flex-end; justify-content:center;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal-box{
+    background:#fff; width:100%; border-radius:24px 24px 0 0; border:2px solid var(--black);
+    border-bottom:none; padding:20px 18px 26px;
+  }
+  .modal-box h3{font-family:'Baloo 2', sans-serif; margin:0 0 14px; font-size:1.15rem; color:var(--orange-dark);}
+  .modal-box label{
+    display:block; font-size:0.72rem; color:var(--orange-dark); margin:12px 0 5px;
+    font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
+  }
+  .modal-box label:first-of-type{margin-top:0;}
+  .modal-box input[type=text], .modal-box input[type=number]{
+    width:100%; padding:12px 14px; border-radius:14px; background:var(--cream);
+    border:2px solid var(--black); color:var(--black); font-size:0.95rem; font-family:'Poppins',sans-serif;
+  }
+  .modal-actions{display:flex; gap:10px; margin-top:18px;}
+  .modal-actions button{
+    flex:1; border:2px solid var(--black); border-radius:999px; padding:13px;
+    font-weight:800; font-family:'Baloo 2', sans-serif; font-size:0.95rem;
+  }
+  .modal-save{background:var(--yellow); color:var(--black); box-shadow:3px 3px 0 var(--black);}
+  .modal-cancel{background:#fff; color:var(--muted);}
+
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>.✦ ݁˖ Mercadito .✦ ݁˖</h1>
+    <div class="badge">🛒</div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-view="catalogo">Catálogo</button>
+    <button class="tab-btn" data-view="compra">Mi compra</button>
+    <button class="tab-btn" data-view="scan">Tag scan</button>
+  </div>
+</header>
+<div class="zigzag"></div>
+
+<main>
+  <div class="view active" id="view-catalogo">
+    <div class="filter-row" id="filter-row"></div>
+    <div id="catalogo-list"></div>
+  </div>
+  <div class="view" id="view-compra"></div>
+
+  <div class="view" id="view-scan">
+    <div class="scan-box">
+      <label>Nombre del producto</label>
+      <input type="text" id="scan-name" placeholder="Ej: Aguacate">
+      <label>Categoría</label>
+      <select id="scan-cat"></select>
+      <label>Precio (COP)</label>
+      <input type="number" id="scan-price" placeholder="Ej: 3500">
+      <label>Descripción (opcional)</label>
+      <input type="text" id="scan-desc" placeholder="Ej: unidad grande">
+      <div class="photo-actions">
+        <label for="scan-photo-camera">📷 Tomar foto</label>
+        <label for="scan-photo-gallery">🖼️ Galería</label>
+      </div>
+      <input type="file" id="scan-photo-camera" accept="image/*" capture="environment">
+      <input type="file" id="scan-photo-gallery" accept="image/*">
+      <div class="preview-wrap" id="preview-wrap" style="display:none;">
+        <img id="preview-img" src="">
+      </div>
+      <button class="add-btn" id="btn-add-scan">Agregar a mi compra</button>
+    </div>
+    <div class="scan-list">
+      <h2>Productos agregados manualmente</h2>
+      <div id="scan-items"></div>
+    </div>
+  </div>
+</main>
+
+<div class="summary-bar">
+  <span class="count" id="summary-count">0 items</span>
+  <span class="total" id="summary-total">$0</span>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <h3>Editar producto</h3>
+    <label>Nombre</label>
+    <input type="text" id="edit-name">
+    <label>Precio (COP)</label>
+    <input type="number" id="edit-price">
+    <div class="modal-actions">
+      <button class="modal-cancel" id="edit-cancel">Cancelar</button>
+      <button class="modal-save" id="edit-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const initialProducts = [
+  {id:"p1", nombre:"Carne Molida", desc:"Carne molida fresca en bandeja", precio:61540, categoria:"Carnes"},
+  {id:"p2", nombre:"Pasta Spaghetti", desc:"5 unidades / 1 kg", precio:30900, categoria:"Carbohidratos"},
+  {id:"p3", nombre:"Té Surtido", desc:"24 unidades / 200 mL", precio:37900, categoria:"Bebidas"},
+  {id:"p4", nombre:"Coca Cola", desc:"12 unidades / 400 mL", precio:29900, categoria:"Bebidas"},
+  {id:"p5", nombre:"Agua Purificada Brisa", desc:"2 unidades / 6 L", precio:15500, categoria:"Bebidas"},
+  {id:"p6", nombre:"Salsa para Pizza", desc:"3 kg", precio:52900, categoria:"Salsas y Condimentos"},
+  {id:"p7", nombre:"Mayonesa Kraft", desc:"2 unidades / 887 mL", precio:55400, categoria:"Salsas y Condimentos"},
+  {id:"p8", nombre:"Bagels", desc:"6 unidades", precio:16900, categoria:"Panadería"},
+  {id:"p9", nombre:"Pan Tajado", desc:"2 unidades / 600 g", precio:12500, categoria:"Panadería"},
+  {id:"p10", nombre:"Huevos AA", desc:"50 unidades", precio:38900, categoria:"Lácteos y huevos"},
+  {id:"p11", nombre:"Leche Deslactosada", desc:"12 unidades / 1.1 L", precio:58900, categoria:"Lácteos y huevos"},
+  {id:"p12", nombre:"Papel Higiénico", desc:"30 unidades", precio:42900, categoria:"Aseo del hogar"},
+  {id:"p13", nombre:"Queso Mozzarella", desc:"2.27 kg", precio:53900, categoria:"Lácteos y huevos"},
+  {id:"p14", nombre:"Pechuga de Pavo Ahumada", desc:"2 unidades / 340 g", precio:71900, categoria:"Carnes"},
+  {id:"p15", nombre:"Aceite de Oliva", desc:"2 L", precio:56900, categoria:"Aceites y Aliños"},
+  {id:"p16", nombre:"Jamón Esparcible", desc:"4 unidades / 120.5 g", precio:42900, categoria:"Carnes"},
+  {id:"p17", nombre:"Deditos de Queso", desc:"2.04 kg", precio:77900, categoria:"Congelados"},
+  {id:"p18", nombre:"Mantequilla sin Sal", desc:"500 g", precio:31500, categoria:"Lácteos y huevos"},
+  {id:"p19", nombre:"Ajo Picado", desc:"907 g", precio:23500, categoria:"Aceites y Aliños"},
+  {id:"p20", nombre:"Queso Mozzarella Light", desc:"900 g", precio:37500, categoria:"Lácteos y huevos"},
+  {id:"p21", nombre:"Filetes de Pechuga", desc:"Bandeja fresca", precio:74446, categoria:"Carnes"},
+  {id:"p22", nombre:"Galletas Goldfish", desc:"24 unidades / 43 g", precio:72900, categoria:"Snacks"},
+  {id:"p23", nombre:"Papas Pringles", desc:"48 unidades / 960 g", precio:128900, categoria:"Snacks"},
+  {id:"p24", nombre:"Filete de Salmón", desc:"Congelado, empaque al vacío", precio:88990, categoria:"Carnes"},
+  {id:"p25", nombre:"Snack Churu para Gatos", desc:"40 unidades / 14 g", precio:129900, categoria:"Mascotas"},
+  {id:"p26", nombre:"Crema Batida", desc:"2 unidades / 425 g", precio:38500, categoria:"Lácteos y huevos"},
+  {id:"p27", nombre:"Paños Húmedos", desc:"3 paquetes / 50 unidades", precio:26900, categoria:"Higiene personal"},
+  {id:"p28", nombre:"Detergente en Polvo Fab", desc:"2 unidades / 4.5 kg", precio:79900, categoria:"Aseo del hogar"},
+  {id:"p29", nombre:"Lavaplatos Axion", desc:"2.8 L", precio:31900, categoria:"Aseo del hogar"},
+  {id:"p30", nombre:"Esponjas Scotch Brite", desc:"8 unidades", precio:19900, categoria:"Aseo del hogar"},
+  {id:"p31", nombre:"Café Instantáneo", desc:"320 g", precio:51900, categoria:"Bebidas"},
+  {id:"p32", nombre:"Crema de Caramelo", desc:"1.4 L", precio:36900, categoria:"Lácteos y huevos"},
+  {id:"p33", nombre:"Harina de Trigo", desc:"5 unidades / 500 g", precio:9500, categoria:"Carbohidratos"},
+  {id:"p34", nombre:"Harina de Maíz Precocida", desc:"6 unidades / 1 kg", precio:19900, categoria:"Carbohidratos"},
+  {id:"p35", nombre:"Cepillo Dental Colgate", desc:"8 unidades, cerdas pulidoras medianas", precio:39900, categoria:"Higiene personal"},
+  {id:"p36", nombre:"Jabón Líquido de Avena", desc:"2 L", precio:16500, categoria:"Higiene personal"},
+  {id:"p37", nombre:"Shampoo Pantene", desc:"1 L", precio:41900, categoria:"Higiene personal"},
+  {id:"p38", nombre:"Servilletas Familia", desc:"12 paquetes / 100 unidades", precio:41900, categoria:"Aseo del hogar"},
+  {id:"p39", nombre:"Cereal Flips Chocolate", desc:"640 g", precio:29900, categoria:"Carbohidratos"},
+  {id:"p40", nombre:"Corn Flakes", desc:"2 unidades / 405 g", precio:27900, categoria:"Carbohidratos"},
+  {id:"p41", nombre:"Avena en Hojuelas", desc:"2 kg", precio:46900, categoria:"Carbohidratos"},
+  {id:"p42", nombre:"Aceite de Girasol", desc:"5 L", precio:65900, categoria:"Aceites y Aliños"},
+  {id:"p43", nombre:"Aceite de Canola Spray", desc:"2 unidades / 400 mL", precio:45900, categoria:"Aceites y Aliños"},
+  {id:"p44", nombre:"Crema Dental Colgate", desc:"6 unidades / 90 mL — verificar precio", precio:51500, categoria:"Higiene personal"},
+  {id:"p45", nombre:"Corazones de Hojaldre", desc:"45 unidades, recién horneados", precio:24900, categoria:"Panadería"},
+  {id:"p46", nombre:"New York Strip Steak", desc:"2 unidades / 225 g", precio:59900, categoria:"Carnes"},
+  {id:"p47", nombre:"Detergente Líquido Fab", desc:"2 unidades / 3 L", precio:69900, categoria:"Aseo del hogar"},
+  {id:"p48", nombre:"Queso Crema Kraft", desc:"4 unidades / 227 g", precio:36500, categoria:"Lácteos y huevos"},
+  {id:"p49", nombre:"Helado Popsy", desc:"2.3 kg / 4 L", precio:68500, categoria:"Congelados"},
+  {id:"p50", nombre:"Maíz Dulce Zenú", desc:"6 unidades / 241 g", precio:35900, categoria:"Enlatados y Conservas"},
+  {id:"p51", nombre:"Tortillas de Maíz", desc:"1 kg", precio:38500, categoria:"Snacks"},
+  {id:"p52", nombre:"Carne para Hamburguesa", desc:"8 unidades / 125 g", precio:63500, categoria:"Carnes"},
+  {id:"p53", nombre:"Papas Sazonadas McCain", desc:"2 kg", precio:31900, categoria:"Congelados"},
+  {id:"p54", nombre:"Papel Aluminio", desc:"91.4 m x 30.4 cm", precio:39900, categoria:"Aseo del hogar"},
+  {id:"p55", nombre:"Bolsas para Perro", desc:"720 unidades + 1 dispensador", precio:52900, categoria:"Mascotas"},
+  {id:"p56", nombre:"Bolsas con Cierre", desc:"455 unidades, paquete variado", precio:59900, categoria:"Aseo del hogar"},
+  {id:"p57", nombre:"Bolsas para Basura", desc:"200 unidades / 15 L", precio:61900, categoria:"Aseo del hogar"},
+  {id:"p58", nombre:"Vino Espumoso Rosé", desc:"6 unidades / 250 mL", precio:57900, categoria:"Bebidas"},
+];
+
+const STORAGE_KEY = "mercado_app_state_v4";
+let memoryFallback = { checked:{}, manualItems:[], overrides:{}, quantities:{} };
+let storageOK = true;
+
+function loadState(){
+  try{
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      const s = JSON.parse(saved);
+      if(!s.overrides) s.overrides = {};
+      if(!s.quantities) s.quantities = {};
+      if(!s.manualItems) s.manualItems = [];
+      s.manualItems.forEach(i=>{ if(!i.cantidad) i.cantidad = 1; });
+      return s;
+    }
+    return { checked:{}, manualItems:[], overrides:{}, quantities:{} };
+  }catch(e){
+    storageOK = false;
+    return memoryFallback;
+  }
+}
+function saveState(){
+  if(!storageOK){ memoryFallback = state; return; }
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ storageOK = false; memoryFallback = state; }
+}
+let state = loadState();
+let currentFilter = "Todas";
+function money(n){ return "$" + Number(n).toLocaleString("es-CO"); }
+function allCategories(){
+  const cats = new Set(initialProducts.map(p=>p.categoria));
+  state.manualItems.forEach(p=>cats.add(p.categoria));
+  return Array.from(cats);
+}
+function isChecked(id){ return !!state.checked[id]; }
+function getQty(id){ return state.quantities[id] || 1; }
+
+function getDisplay(p){
+  const o = state.overrides[p.id];
+  if(o) return {...p, nombre:o.nombre, precio:o.precio};
+  return p;
+}
+
+// ---------- iconos visuales (solo se evalua el nombre del producto) ----------
+function iconFor(p){
+  const n = p.nombre.toLowerCase();
+  const map = [
+    [/goldfish|galletas/, "🍪"],
+    [/chips de papa|papas sazonadas|papas congeladas|pringles/, "🍟"],
+    [/tortilla/, "🫓"],
+    [/hamburguesa/, "🍔"],
+    [/steak|molida|new york strip/, "🥩"],
+    [/pechuga|pollo|pavo/, "🍗"],
+    [/jamón|jamon/, "🍖"],
+    [/salmón|salmon|pescado|atun/, "🐟"],
+    [/gatos|gato/, "🐱"],
+    [/perro/, "🐶"],
+    [/bagel/, "🥯"],
+    [/hojaldre/, "🥐"],
+    [/harina|pan /, "🍞"],
+    [/^pan |pan tajado/, "🍞"],
+    [/ajo/, "🧄"],
+    [/aceite/, "🫒"],
+    [/mayonesa|salsa/, "🥫"],
+    [/maíz dulce|maiz dulce/, "🌽"],
+    [/queso crema/, "🧀"],
+    [/queso|mozzarella/, "🧀"],
+    [/mantequilla/, "🧈"],
+    [/crema batida/, "🍦"],
+    [/crema de caramelo|leche/, "🥛"],
+    [/huevo/, "🥚"],
+    [/té surtido|té /, "🍵"],
+    [/café|cafe/, "☕"],
+    [/vino/, "🍷"],
+    [/gaseosa|coca cola|fizzy/, "🥤"],
+    [/agua purificada/, "💧"],
+    [/helado/, "🍦"],
+    [/cepillo dental/, "🪥"],
+    [/crema dental/, "🪥"],
+    [/shampoo|champu/, "🧴"],
+    [/jabon|jabón/, "🧼"],
+    [/cereal|avena|flips|corn flakes/, "🥣"],
+    [/paños húmedos|paños humedos/, "🧻"],
+    [/papel higi|servilleta/, "🧻"],
+    [/papel aluminio/, "🧻"],
+    [/detergente/, "🧺"],
+    [/lavaplatos|esponja/, "🧽"],
+    [/bolsas para basura/, "🗑️"],
+    [/bolsas con cierre/, "🛍️"],
+  ];
+  for(const [re, emoji] of map){ if(re.test(n)) return emoji; }
+  const catMap = {
+    "Carbohidratos":"🌾","Carnes":"🥩","Higiene personal":"🧴","Lácteos y huevos":"🥛",
+    "Bebidas":"🥤","Aceites y Aliños":"🫒","Salsas y Condimentos":"🥫","Enlatados y Conservas":"🥫",
+    "Panadería":"🍞","Aseo del hogar":"🧽","Snacks":"🍪","Congelados":"🧊","Mascotas":"🐾"
+  };
+  return catMap[p.categoria] || "🛒";
+}
+
+function renderFilters(){
+  const row = document.getElementById("filter-row");
+  const cats = ["Todas", ...allCategories()];
+  row.innerHTML = "";
+  cats.forEach(c=>{
+    const chip = document.createElement("button");
+    chip.className = "filter-chip" + (currentFilter===c ? " active":"");
+    chip.textContent = c;
+    chip.addEventListener("click", ()=>{ currentFilter = c; renderFilters(); renderCatalogo(); });
+    row.appendChild(chip);
+  });
+}
+
+function qtyControls(id, manual){
+  return `
+    <div class="qty-stepper">
+      <button data-qtydown="${id}" data-manual="${manual?1:0}">−</button>
+      <span class="qty-value" id="qty-${manual?'m-':''}${id}">${manual ? "" : getQty(id)}</span>
+      <button data-qtyup="${id}" data-manual="${manual?1:0}">+</button>
+    </div>
+  `;
+}
+
+function wireQtyButtons(container, onChange){
+  container.querySelectorAll('[data-qtyup]').forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      const id = e.target.dataset.qtyup;
+      const manual = e.target.dataset.manual === "1";
+      if(manual){
+        const item = state.manualItems.find(i=>i.id===id);
+        if(item){ item.cantidad = (item.cantidad||1) + 1; }
+      } else {
+        state.quantities[id] = getQty(id) + 1;
+      }
+      saveState(); onChange();
+    });
+  });
+  container.querySelectorAll('[data-qtydown]').forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      const id = e.target.dataset.qtydown;
+      const manual = e.target.dataset.manual === "1";
+      if(manual){
+        const item = state.manualItems.find(i=>i.id===id);
+        if(item && item.cantidad>1){ item.cantidad -= 1; }
+      } else {
+        if(getQty(id) > 1) state.quantities[id] = getQty(id) - 1;
+      }
+      saveState(); onChange();
+    });
+  });
+}
+
+function renderCatalogo(){
+  const container = document.getElementById("catalogo-list");
+  container.innerHTML = "";
+  const cats = {};
+  initialProducts.forEach(p=>{
+    if(currentFilter!=="Todas" && p.categoria!==currentFilter) return;
+    if(!cats[p.categoria]) cats[p.categoria] = [];
+    cats[p.categoria].push({...getDisplay(p), manual:false});
+  });
+  state.manualItems.forEach(p=>{
+    if(currentFilter!=="Todas" && p.categoria!==currentFilter) return;
+    if(!cats[p.categoria]) cats[p.categoria] = [];
+    cats[p.categoria].push({...p, manual:true});
+  });
+
+  if(Object.keys(cats).length===0){
+    container.innerHTML = `<div class="empty-msg">No hay productos en esta categoría.</div>`;
+    return;
+  }
+
+  Object.keys(cats).forEach(catName=>{
+    const catDiv = document.createElement("div");
+    catDiv.className = "category";
+    catDiv.innerHTML = `<h2>${catName}</h2>`;
+
+    cats[catName].forEach(p=>{
+      const checked = p.manual ? !!p.checked : isChecked(p.id);
+      const row = document.createElement("div");
+      row.className = "product" + (checked ? " checked":"");
+      row.innerHTML = `
+        <div class="product-top">
+          ${p.foto ? `<img class="product-photo" src="${p.foto}">` : `<div class="icon-badge">${iconFor(p)}</div>`}
+          <div class="product-info">
+            <div class="product-name">${p.nombre}</div>
+            <div class="product-desc">${p.desc||""}</div>
+          </div>
+          <div class="check-wrap"><input type="checkbox" data-id="${p.id}" data-manual="${p.manual?1:0}" ${checked?"checked":""}></div>
+        </div>
+        <div class="product-bottom">
+          <div class="product-price">${money(p.precio)}</div>
+          ${qtyControls(p.id, p.manual)}
+          <button class="edit-btn" data-edit="${p.id}" data-manual="${p.manual?1:0}">✏️</button>
+        </div>
+      `;
+      if(p.manual){
+        row.querySelector('.qty-value').textContent = p.cantidad || 1;
+      }
+      catDiv.appendChild(row);
+    });
+    container.appendChild(catDiv);
+  });
+
+  container.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener("change", e=>{
+      const id = e.target.dataset.id;
+      const manual = e.target.dataset.manual === "1";
+      if(manual){
+        const item = state.manualItems.find(i=>i.id===id);
+        if(item) item.checked = e.target.checked;
+      } else {
+        state.checked[id] = e.target.checked;
+      }
+      saveState();
+      renderCatalogo(); renderCompra(); renderScanItems(); renderSummary();
+    });
+  });
+  container.querySelectorAll('.edit-btn').forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      openEditModal(e.target.dataset.edit, e.target.dataset.manual === "1");
+    });
+  });
+  wireQtyButtons(container, ()=>{ renderCatalogo(); renderCompra(); renderScanItems(); renderSummary(); });
+}
+
+function renderCompra(){
+  const container = document.getElementById("view-compra");
+  container.innerHTML = "";
+  const selected = [];
+  initialProducts.forEach(p=>{ if(state.checked[p.id]) selected.push({...getDisplay(p), manual:false}); });
+  state.manualItems.forEach(p=>{ if(p.checked) selected.push({...p, manual:true}); });
+
+  if(selected.length===0){
+    container.innerHTML = `<div class="empty-msg">Aún no has seleccionado productos.<br>Ve a Catálogo o Tag scan para agregar.</div>`;
+    return;
+  }
+  const cats = {};
+  selected.forEach(p=>{ if(!cats[p.categoria]) cats[p.categoria] = []; cats[p.categoria].push(p); });
+
+  Object.keys(cats).forEach(catName=>{
+    const catDiv = document.createElement("div");
+    catDiv.className = "category";
+    catDiv.innerHTML = `<h2>${catName}</h2>`;
+    cats[catName].forEach(p=>{
+      const cantidad = p.manual ? (p.cantidad||1) : getQty(p.id);
+      const row = document.createElement("div");
+      row.className = "product checked";
+      row.innerHTML = `
+        <div class="product-top">
+          ${p.foto ? `<img class="product-photo" src="${p.foto}">` : `<div class="icon-badge">${iconFor(p)}</div>`}
+          <div class="product-info">
+            <div class="product-name">${p.nombre}</div>
+            <div class="product-desc">${p.desc||""}</div>
+          </div>
+          <div class="check-wrap"><input type="checkbox" data-id="${p.id}" data-manual="${p.manual?1:0}" checked></div>
+        </div>
+        <div class="product-bottom">
+          <div class="product-price">${money(p.precio * cantidad)}</div>
+          ${qtyControls(p.id, p.manual)}
+          <button class="edit-btn" data-edit="${p.id}" data-manual="${p.manual?1:0}">✏️</button>
+        </div>
+      `;
+      if(p.manual){
+        row.querySelector('.qty-value').textContent = cantidad;
+      }
+      catDiv.appendChild(row);
+    });
+    container.appendChild(catDiv);
+  });
+
+  container.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener("change", e=>{
+      const id = e.target.dataset.id;
+      const manual = e.target.dataset.manual === "1";
+      if(manual){
+        const item = state.manualItems.find(i=>i.id===id);
+        if(item) item.checked = e.target.checked;
+      } else { state.checked[id] = e.target.checked; }
+      saveState();
+      renderCatalogo(); renderCompra(); renderScanItems(); renderSummary();
+    });
+  });
+  container.querySelectorAll('.edit-btn').forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      openEditModal(e.target.dataset.edit, e.target.dataset.manual === "1");
+    });
+  });
+  wireQtyButtons(container, ()=>{ renderCatalogo(); renderCompra(); renderScanItems(); renderSummary(); });
+}
+
+function renderSummary(){
+  let count = 0, total = 0;
+  initialProducts.forEach(p=>{
+    if(state.checked[p.id]){
+      const qty = getQty(p.id);
+      count += qty;
+      total += getDisplay(p).precio * qty;
+    }
+  });
+  state.manualItems.forEach(p=>{
+    if(p.checked){
+      const qty = p.cantidad || 1;
+      count += qty;
+      total += Number(p.precio) * qty;
+    }
+  });
+  document.getElementById("summary-count").textContent = count + (count===1?" item":" items");
+  document.getElementById("summary-total").textContent = money(total);
+}
+
+function populateCatSelect(){
+  const sel = document.getElementById("scan-cat");
+  sel.innerHTML = "";
+  allCategories().forEach(c=>{
+    const opt = document.createElement("option");
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  const optNew = document.createElement("option");
+  optNew.value = "__nueva__"; optNew.textContent = "+ Nueva categoría";
+  sel.appendChild(optNew);
+}
+
+let currentPhotoData = null;
+function handlePhotoInput(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    currentPhotoData = ev.target.result;
+    document.getElementById("preview-img").src = currentPhotoData;
+    document.getElementById("preview-wrap").style.display = "block";
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById("scan-photo-camera").addEventListener("change", handlePhotoInput);
+document.getElementById("scan-photo-gallery").addEventListener("change", handlePhotoInput);
+
+document.getElementById("btn-add-scan").addEventListener("click", ()=>{
+  const nombre = document.getElementById("scan-name").value.trim();
+  const precio = document.getElementById("scan-price").value;
+  const desc = document.getElementById("scan-desc").value.trim();
+  let categoria = document.getElementById("scan-cat").value;
+  if(!nombre || !precio){ alert("Falta nombre o precio."); return; }
+  if(categoria === "__nueva__"){
+    categoria = prompt("Nombre de la nueva categoría:");
+    if(!categoria) return;
+  }
+  const item = {
+    id: "m_" + Date.now(),
+    nombre, desc, precio: Number(precio), categoria,
+    foto: currentPhotoData, checked: true, cantidad: 1
+  };
+  state.manualItems.push(item);
+  saveState();
+
+  document.getElementById("scan-name").value = "";
+  document.getElementById("scan-price").value = "";
+  document.getElementById("scan-desc").value = "";
+  document.getElementById("scan-photo-camera").value = "";
+  document.getElementById("scan-photo-gallery").value = "";
+  currentPhotoData = null;
+  document.getElementById("preview-wrap").style.display = "none";
+  populateCatSelect();
+  renderFilters();
+  renderScanItems(); renderCatalogo(); renderCompra(); renderSummary();
+});
+
+function renderScanItems(){
+  const container = document.getElementById("scan-items");
+  container.innerHTML = "";
+  if(state.manualItems.length===0){
+    container.innerHTML = `<div class="empty-msg">No has agregado productos manuales.</div>`;
+    return;
+  }
+  state.manualItems.forEach(p=>{
+    const row = document.createElement("div");
+    row.className = "product" + (p.checked ? " checked":"");
+    row.innerHTML = `
+      <div class="product-top">
+        ${p.foto ? `<img class="product-photo" src="${p.foto}">` : `<div class="icon-badge">${iconFor(p)}</div>`}
+        <div class="product-info">
+          <div class="product-name">${p.nombre}</div>
+          <div class="product-desc">${p.desc||""} · ${p.categoria}</div>
+        </div>
+        <div class="check-wrap"><input type="checkbox" data-id="${p.id}" data-manual="1" ${p.checked?"checked":""}></div>
+      </div>
+      <div class="product-bottom">
+        <div class="product-price">${money(p.precio)}</div>
+        <div class="qty-stepper">
+          <button data-qtydown="${p.id}" data-manual="1">−</button>
+          <span class="qty-value">${p.cantidad||1}</span>
+          <button data-qtyup="${p.id}" data-manual="1">+</button>
+        </div>
+        <button class="edit-btn" data-edit="${p.id}" data-manual="1">✏️</button>
+        <button class="del-btn" data-del="${p.id}">✕</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  container.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener("change", e=>{
+      const id = e.target.dataset.id;
+      const item = state.manualItems.find(i=>i.id===id);
+      if(item) item.checked = e.target.checked;
+      saveState();
+      renderScanItems(); renderCatalogo(); renderCompra(); renderSummary();
+    });
+  });
+  container.querySelectorAll('.edit-btn[data-manual="1"]').forEach(btn=>{
+    btn.addEventListener("click", e=>{ openEditModal(e.target.dataset.edit, true); });
+  });
+  container.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      const id = e.target.dataset.del;
+      state.manualItems = state.manualItems.filter(i=>i.id!==id);
+      saveState();
+      renderFilters();
+      renderScanItems(); renderCatalogo(); renderCompra(); renderSummary();
+    });
+  });
+  wireQtyButtons(container, ()=>{ renderScanItems(); renderCatalogo(); renderCompra(); renderSummary(); });
+}
+
+// ---------- modal de edicion ----------
+let editingTarget = null;
+function openEditModal(id, isManual){
+  editingTarget = {id, isManual};
+  let nombre, precio;
+  if(isManual){
+    const item = state.manualItems.find(i=>i.id===id);
+    nombre = item.nombre; precio = item.precio;
+  } else {
+    const base = initialProducts.find(p=>p.id===id);
+    const disp = getDisplay(base);
+    nombre = disp.nombre; precio = disp.precio;
+  }
+  document.getElementById("edit-name").value = nombre;
+  document.getElementById("edit-price").value = precio;
+  document.getElementById("modal-overlay").classList.add("active");
+}
+document.getElementById("edit-cancel").addEventListener("click", ()=>{
+  document.getElementById("modal-overlay").classList.remove("active");
+  editingTarget = null;
+});
+document.getElementById("edit-save").addEventListener("click", ()=>{
+  if(!editingTarget) return;
+  const nombre = document.getElementById("edit-name").value.trim();
+  const precio = document.getElementById("edit-price").value;
+  if(!nombre || precio===""){ alert("Falta nombre o precio."); return; }
+  if(editingTarget.isManual){
+    const item = state.manualItems.find(i=>i.id===editingTarget.id);
+    if(item){ item.nombre = nombre; item.precio = Number(precio); }
+  } else {
+    state.overrides[editingTarget.id] = { nombre, precio: Number(precio) };
+  }
+  saveState();
+  document.getElementById("modal-overlay").classList.remove("active");
+  editingTarget = null;
+  renderCatalogo(); renderCompra(); renderScanItems(); renderSummary();
+});
+
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("view-"+btn.dataset.view).classList.add("active");
+  });
+});
+
+renderFilters();
+populateCatSelect();
+renderCatalogo();
+renderCompra();
+renderScanItems();
+renderSummary();
+</script>
+</body>
+</html>
